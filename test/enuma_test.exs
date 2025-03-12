@@ -5,7 +5,7 @@ defmodule EnumaTest do
   require MessageEnum
 
   test "enum values are correct" do
-    assert MessageEnum.quit() == :quit
+    assert MessageEnum.quit() == "Quit"
     assert MessageEnum.move(%{x: 1, y: 2}) == {:move, %{x: 1, y: 2}}
     assert MessageEnum.write("HI") == {:write, "HI"}
     assert MessageEnum.change_color(1, 2, 3) == {:change_color, 1, 2, 3}
@@ -23,9 +23,15 @@ defmodule EnumaTest do
       defmodule MultiDefEnum do
         use Enuma
 
-        defenum [:a, :b]
+        defenum do
+          item :a
+          item :b
+        end
 
-        defenum [:c, :d]
+        defenum do
+          item :a
+          item :c
+        end
       end
     end
   end

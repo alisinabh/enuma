@@ -1,10 +1,10 @@
 defmodule MessageEnum do
   use Enuma
 
-  defenum [
-    :quit,
-    move: %{x: integer(), y: integer()},
-    write: String.t(),
-    change_color: [integer(), integer(), integer()]
-  ]
+  defenum do
+    item :quit, value: "Quit"
+    item :move, args: %{x: integer(), y: integer()}
+    item :write, args: String.t()
+    item :change_color, args: [integer(), integer(), integer()]
+  end
 end
