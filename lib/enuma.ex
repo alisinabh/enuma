@@ -1,4 +1,35 @@
 defmodule Enuma do
+  @moduledoc """
+  Enuma is a library for defining and working with Rust like Enums in Elixir.
+
+  ### Example
+
+  ```elixir
+  defmodule MyEnum do
+    use Enuma
+
+    defenum do
+      item :foo
+      item :bar, args: [integer()]
+      item :baz, args: [String.t()]
+    end
+  end
+  ```
+
+  Enuma will create macros for each item, allowing you to match on the enum values and check if a value is of a specific type.
+
+  ```elixir
+  iex> require MyEnum
+  MyEnum
+
+  iex> MyEnum.foo() = :foo
+  true
+
+  iex> MyEnum.bar(x) = {:bar, 1}
+  {:bar, 1}
+  ```
+  """
+
   defmacro __using__(_env) do
     quote location: :keep do
       import Enuma
@@ -6,6 +37,9 @@ defmodule Enuma do
     end
   end
 
+  @doc """
+  Defines an enum with the given items.
+  """
   defmacro defenum(do: block) do
     quote location: :keep do
       Enuma.assert_no_items(__MODULE__)
@@ -15,6 +49,12 @@ defmodule Enuma do
     end
   end
 
+  @doc """
+  Defines an item with the given name and options.
+
+  ## Options
+    * `:args` - a list of arguments to be passed to the item macro
+  """
   defmacro item(name, opts \\ []) do
     args = Keyword.get(opts, :args, []) |> List.wrap()
     opts = Keyword.put(opts, :args, Macro.escape(args))
@@ -24,6 +64,7 @@ defmodule Enuma do
     end
   end
 
+  @doc false
   def assert_no_items(module) do
     case Module.get_attribute(module, :enuma_defenum_items) do
       [] -> :ok
@@ -88,9 +129,7 @@ defmodule Enuma do
           |> Enum.count()
           |> Macro.generate_arguments(__CALLER__.module)
 
-        value = Keyword.get(opts, :value, item)
-
-        generate_item_ast(item, args, value, opts)
+        generate_item_ast(item, args, item, opts)
       end
 
     item_keys = for {item, _opts} <- items, do: item

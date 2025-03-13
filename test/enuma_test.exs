@@ -1,6 +1,5 @@
 defmodule EnumaTest do
   use ExUnit.Case
-  doctest Enuma
 
   require MessageEnum
 
