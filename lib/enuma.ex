@@ -28,6 +28,9 @@ defmodule Enuma do
   iex> MyEnum.bar(x) = {:bar, 1}
   {:bar, 1}
   ```
+
+  It will also generate macros for checking if a value is of a specific type. (e.g `MyEnum.is_foo(value)`).
+  These macros can be used in pattern matching and guards.
   """
 
   defmacro __using__(_env) do
@@ -87,6 +90,16 @@ defmodule Enuma do
 
   def to_string(value, _type_module) when is_tuple(value) do
     {:error, :unsupported_enuma_ecto_type}
+  end
+
+  defmacro is_valid(value, type_module) do
+    type_module = Macro.expand(type_module, __ENV__)
+    items = type_module.__enuma_items__()
+
+    quote do
+      (is_atom(unquote(value)) and unquote(value) in unquote(items)) or
+        (is_tuple(unquote(value)) and elem(unquote(value), 0) in unquote(items))
+    end
   end
 
   def valid?(value, type_module) when is_atom(value) do

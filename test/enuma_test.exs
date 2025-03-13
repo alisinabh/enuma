@@ -24,6 +24,15 @@ defmodule EnumaTest do
     refute MessageEnum.is_change_color(nil)
   end
 
+  test "is_valid macro works as expected" do
+    require Enuma
+
+    assert Enuma.is_valid(MessageEnum.quit(), MessageEnum)
+    assert Enuma.is_valid(MessageEnum.move(%{x: 1, y: 2}), MessageEnum)
+    assert Enuma.is_valid(MessageEnum.write("HI"), MessageEnum)
+    assert Enuma.is_valid(MessageEnum.change_color(1, 2, 3), MessageEnum)
+  end
+
   test "enuma cannot redefine already defined enum" do
     assert_raise RuntimeError, ~r/Enuma: Cannot redefine already defined enum/, fn ->
       defmodule MultiDefEnum do
