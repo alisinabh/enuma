@@ -10,11 +10,18 @@ defmodule EnumaTest do
     assert MessageEnum.change_color(1, 2, 3) = {:change_color, 1, 2, 3}
   end
 
-  test "is_value? works as expected" do
+  test "is_[value] macro works as expected" do
     assert MessageEnum.is_quit(MessageEnum.quit())
     assert MessageEnum.is_move(MessageEnum.move(%{x: 1, y: 2}))
     assert MessageEnum.is_write(MessageEnum.write("HI"))
     assert MessageEnum.is_change_color(MessageEnum.change_color(1, 2, 3))
+  end
+
+  test "is_[value] macro returns false for other values" do
+    refute MessageEnum.is_quit(MessageEnum.move(%{x: 1, y: 2}))
+    refute MessageEnum.is_move(:unexpected)
+    refute MessageEnum.is_write(MessageEnum.change_color(1, 2, 3))
+    refute MessageEnum.is_change_color(nil)
   end
 
   test "enuma cannot redefine already defined enum" do

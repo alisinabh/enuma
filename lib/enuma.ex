@@ -164,7 +164,7 @@ defmodule Enuma do
         value = unquote(value)
 
         quote location: :keep do
-          elem(unquote(v), 0) == unquote(value)
+          is_tuple(unquote(v)) and elem(unquote(v), 0) == unquote(value)
         end
       end
     end
