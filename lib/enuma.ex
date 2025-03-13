@@ -16,7 +16,7 @@ defmodule Enuma do
   end
 
   defmacro item(name, opts \\ []) do
-    args = Keyword.get(opts, :args, [])
+    args = Keyword.get(opts, :args, []) |> List.wrap()
     opts = Keyword.put(opts, :args, Macro.escape(args))
 
     quote location: :keep do
@@ -95,6 +95,8 @@ defmodule Enuma do
 
     item_keys = for {item, _opts} <- items, do: item
 
+    items_map = Enum.into(items, %{})
+
     string_conversion_asts =
       for item <- item_keys do
         quote do
@@ -122,6 +124,33 @@ defmodule Enuma do
 
       def enuma_items do
         unquote(item_keys)
+      end
+
+      def valid?(value) when is_atom(value) do
+        value in enuma_items()
+      end
+
+      def valid?(value) when is_tuple(value) do
+        [item_type | args] = Tuple.to_list(value)
+
+        case Map.fetch(unquote(Macro.escape(items_map)), item_type) do
+          {:ok, item} ->
+            arg_types = Keyword.fetch!(item, :args)
+
+            # Fast-fail: check argument count first
+            if Enum.count(args) != Enum.count(arg_types) do
+              false
+            else
+              # Check each argument matches expected type
+              Enum.zip(arg_types, args)
+              |> Enum.all?(fn {type, arg} ->
+                Enuma.Helpers.type_match?(arg, type)
+              end)
+            end
+
+          :error ->
+            false
+        end
       end
     end
   end

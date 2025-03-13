@@ -5,10 +5,10 @@ defmodule EnumaTest do
   require MessageEnum
 
   test "enum values are correct" do
-    assert MessageEnum.quit() == "Quit"
-    assert MessageEnum.move(%{x: 1, y: 2}) == {:move, %{x: 1, y: 2}}
-    assert MessageEnum.write("HI") == {:write, "HI"}
-    assert MessageEnum.change_color(1, 2, 3) == {:change_color, 1, 2, 3}
+    assert MessageEnum.quit() = :quit
+    assert MessageEnum.move(%{x: 1, y: 2}) = {:move, %{x: 1, y: 2}}
+    assert MessageEnum.write("HI") = {:write, "HI"}
+    assert MessageEnum.change_color(1, 2, 3) = {:change_color, 1, 2, 3}
   end
 
   test "is_value? works as expected" do
