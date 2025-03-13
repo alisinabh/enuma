@@ -126,6 +126,10 @@ defmodule Enuma do
         unquote(item_keys)
       end
 
+      def __items_map__ do
+        unquote(Macro.escape(items_map))
+      end
+
       def valid?(value) when is_atom(value) do
         value in enuma_items()
       end
@@ -133,7 +137,7 @@ defmodule Enuma do
       def valid?(value) when is_tuple(value) do
         [item_type | args] = Tuple.to_list(value)
 
-        case Map.fetch(unquote(Macro.escape(items_map)), item_type) do
+        case Map.fetch(__items_map__(), item_type) do
           {:ok, item} ->
             arg_types = Keyword.fetch!(item, :args)
 
@@ -152,6 +156,8 @@ defmodule Enuma do
             false
         end
       end
+
+      def valid?(_), do: false
     end
   end
 end
