@@ -64,6 +64,62 @@ defmodule Enuma do
     end
   end
 
+  def from_string(value, type_module) do
+    case Map.fetch(type_module.__enuma_string_mappings__(), value) do
+      {:ok, atom} -> {:ok, atom}
+      :error -> {:error, :invalid_enuma_value}
+    end
+  end
+
+  def from_string!(value, type_module) do
+    case from_string(value, type_module) do
+      {:ok, atom} -> atom
+      {:error, :invalid_enuma_value} -> raise "Enuma: Invalid enum value"
+    end
+  end
+
+  def to_string(key, type_module) when is_atom(key) do
+    case Map.fetch(type_module.__enuma_atom_mappings__(), key) do
+      {:ok, string} -> {:ok, string}
+      :error -> {:error, :invalid_enuma_value}
+    end
+  end
+
+  def to_string(value, _type_module) when is_tuple(value) do
+    {:error, :unsupported_enuma_ecto_type}
+  end
+
+  def valid?(value, type_module) when is_atom(value) do
+    value in type_module.__enuma_items__()
+  end
+
+  def valid?(nil, _type_module), do: true
+
+  def valid?(value, type_module) when is_tuple(value) do
+    [item_type | args] = Tuple.to_list(value)
+
+    case Map.fetch(type_module.__enuma_items_map__(), item_type) do
+      {:ok, item} ->
+        arg_types = Keyword.fetch!(item, :args)
+
+        # Fast-fail: check argument count first
+        if Enum.count(args) != Enum.count(arg_types) do
+          false
+        else
+          # Check each argument matches expected type
+          Enum.zip(arg_types, args)
+          |> Enum.all?(fn {type, arg} ->
+            Enuma.Helpers.type_match?(arg, type)
+          end)
+        end
+
+      :error ->
+        false
+    end
+  end
+
+  def valid?(_, _type_module), do: false
+
   @doc false
   def assert_no_items(module) do
     case Module.get_attribute(module, :enuma_defenum_items) do
@@ -136,67 +192,36 @@ defmodule Enuma do
 
     items_map = Enum.into(items, %{})
 
-    string_conversion_asts =
-      for item <- item_keys do
-        quote do
-          def enuma_to_atom(unquote(Atom.to_string(item))) do
-            {:ok, unquote(item)}
-          end
-        end
-      end
+    string_conversion_mapping =
+      item_keys
+      |> Enum.map(&{Atom.to_string(&1), &1})
+      |> Enum.into(%{})
+      |> Macro.escape()
+
+    atom_conversion_mapping =
+      item_keys
+      |> Enum.map(&{&1, Atom.to_string(&1)})
+      |> Enum.into(%{})
+      |> Macro.escape()
 
     quote location: :keep do
       unquote_splicing(items_asts)
 
-      unquote_splicing(string_conversion_asts)
-
-      def enuma_to_atom(_invalid) do
-        {:error, :invalid_enuma_value}
+      def __enuma_string_mappings__ do
+        unquote(string_conversion_mapping)
       end
 
-      def enuma_to_atom!(atom) do
-        case enuma_to_atom(atom) do
-          {:ok, atom} -> atom
-          {:error, :invalid_enuma_value} -> raise ArgumentError, message: "invalid enuma value"
-        end
+      def __enuma_atom_mappings__ do
+        unquote(atom_conversion_mapping)
       end
 
-      def enuma_items do
+      def __enuma_items__ do
         unquote(item_keys)
       end
 
-      def __items_map__ do
+      def __enuma_items_map__ do
         unquote(Macro.escape(items_map))
       end
-
-      def valid?(value) when is_atom(value) do
-        value in enuma_items()
-      end
-
-      def valid?(value) when is_tuple(value) do
-        [item_type | args] = Tuple.to_list(value)
-
-        case Map.fetch(__items_map__(), item_type) do
-          {:ok, item} ->
-            arg_types = Keyword.fetch!(item, :args)
-
-            # Fast-fail: check argument count first
-            if Enum.count(args) != Enum.count(arg_types) do
-              false
-            else
-              # Check each argument matches expected type
-              Enum.zip(arg_types, args)
-              |> Enum.all?(fn {type, arg} ->
-                Enuma.Helpers.type_match?(arg, type)
-              end)
-            end
-
-          :error ->
-            false
-        end
-      end
-
-      def valid?(_), do: false
     end
   end
 end

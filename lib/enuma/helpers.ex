@@ -79,8 +79,8 @@ defmodule Enuma.Helpers do
   end
 
   def from_map(%{"key" => key, "values" => values}, type_module) do
-    with {:ok, key} <- type_module.enuma_to_atom(key) do
-      item = type_module.__items_map__()[key]
+    with {:ok, key} <- Enuma.from_string(key, type_module) do
+      item = type_module.__enuma_items_map__()[key]
       item_args_len = Enum.count(Keyword.fetch!(item, :args))
 
       cond do
@@ -93,17 +93,5 @@ defmodule Enuma.Helpers do
 
   def from_map(_invalid, _type_module) do
     {:error, :invalid_dumped_value}
-  end
-
-  def from_string(key, type_module) do
-    type_module.enuma_to_atom(key)
-  end
-
-  def to_string(key) when is_atom(key) do
-    {:ok, Atom.to_string(key)}
-  end
-
-  def to_string(value) when is_tuple(value) do
-    {:error, :unsupported_enuma_ecto_type}
   end
 end

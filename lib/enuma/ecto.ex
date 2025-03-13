@@ -79,11 +79,15 @@ if Code.ensure_loaded?(Ecto.Type) do
       do: %{type: Keyword.fetch!(opts, :type), ecto_type: Keyword.get(opts, :ecto_type, :string)}
 
     def cast(data, params) do
-      if params.type.valid?(data) do
+      if Enuma.valid?(data, params.type) do
         {:ok, data}
       else
         :error
       end
+    end
+
+    def load(nil, _loader, _params) do
+      {:ok, nil}
     end
 
     def load(data, _loader, %{ecto_type: :map} = params) do
@@ -91,15 +95,19 @@ if Code.ensure_loaded?(Ecto.Type) do
     end
 
     def load(data, _loader, %{ecto_type: :string} = params) do
-      Helpers.from_string(data, params.type)
+      Enuma.from_string(data, params.type)
+    end
+
+    def dump(nil, _dumper, _params) do
+      {:ok, nil}
     end
 
     def dump(data, _dumper, %{ecto_type: :map}) do
       Helpers.to_map(data)
     end
 
-    def dump(data, _dumper, %{ecto_type: :string}) do
-      Helpers.to_string(data)
+    def dump(data, _dumper, %{ecto_type: :string} = params) do
+      Enuma.to_string(data, params.type)
     end
 
     def equal?(a, b, _params) do
