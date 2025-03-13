@@ -105,5 +105,9 @@ if Code.ensure_loaded?(Ecto.Type) do
     def equal?(a, b, _params) do
       a == b
     end
+
+    def embed_as(_format, _params) do
+      :dump
+    end
   end
 end
