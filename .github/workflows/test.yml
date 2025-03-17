@@ -26,8 +26,8 @@ jobs:
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
-          otp-version: ${{matrix.variation.otp}}
-          elixir-version: ${{matrix.variation.elixir}}
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
 
       - name: Fetch dependencies
         run: mix deps.get
