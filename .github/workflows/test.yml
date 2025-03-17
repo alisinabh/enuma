@@ -21,13 +21,13 @@ jobs:
         elixir: ["1.17", "1.18"]
 
     steps:
-      - uses: actions/checkout@v3
-
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
           otp-version: ${{matrix.otp}}
           elixir-version: ${{matrix.elixir}}
+
+      - uses: actions/checkout@v3
 
       - name: Fetch dependencies
         run: mix deps.get
