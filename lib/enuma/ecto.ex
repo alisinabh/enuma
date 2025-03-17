@@ -13,6 +13,15 @@ if Code.ensure_loaded?(Ecto.Type) do
     To use an Enuma enum in your Ecto schema:
 
     ```elixir
+    defmodule StatusEnum do
+      use Enuma
+
+      defenum do
+        item :active
+        item :inactive
+      end
+    end
+
     defmodule MySchema do
       use Ecto.Schema
 
@@ -63,9 +72,9 @@ if Code.ensure_loaded?(Ecto.Type) do
     You can then pass enum values in your params:
 
     ```elixir
-    MySchema.changeset(%MySchema{}, %{status: })
+    MySchema.changeset(%MySchema{}, %{status: StatusEnum.active()})
     # Or with complex values
-    MySchema.changeset(%MySchema{}, %{message: {:move, %{x: 1, y: 2}}})
+    MySchema.changeset(%MySchema{}, %{message: MyComplexEnum.move(1, 2)})
     ```
     """
 

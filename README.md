@@ -49,14 +49,14 @@ circle = Shape.circle(5.0)  # {:circle, 5.0}
 rect = Shape.rectangle(4.0, 3.0)  # {:rectangle, 4.0, 3.0}
 triangle = Shape.triangle()  # :triangle
 
-# Pattern matching
+# Require is needed to use the Enuma helpers since they are macros
 require Shape
 
 def calculate_area(shape) do
   case shape do
     Shape.circle(r) -> :math.pi() * r * r
     Shape.rectangle(w, h) -> w * h
-    Shape.triangle() -> "Area calculation for triangle not implemented"
+    Shape.triangle() -> raise "Area calculation for triangle not implemented"
   end
 end
 
@@ -77,6 +77,7 @@ defmodule DrawingObject do
 
   schema "drawing_objects" do
     # Using map serialization to support all shape variants including those with parameters
+    # Using string serialization only works with enums only holding simple types (no arguments)
     field :shape, Enuma.Ecto, type: Shape, ecto_type: :map
 
     timestamps()
@@ -106,6 +107,8 @@ changeset =
   |> cast(params, [:shape])
   |> validate_required([:shape])
 ```
+
+Read more about Ecto integration in the `Enuma.Ecto` module documentation.
 
 ## Documentation
 
