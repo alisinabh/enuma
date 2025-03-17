@@ -27,6 +27,7 @@ defmodule EnumaTest do
   test "is_valid macro works as expected" do
     require Enuma
 
+    assert Enuma.is_valid(:quit, MessageEnum)
     assert Enuma.is_valid(MessageEnum.quit(), MessageEnum)
     assert Enuma.is_valid(MessageEnum.move(%{x: 1, y: 2}), MessageEnum)
     assert Enuma.is_valid(MessageEnum.write("HI"), MessageEnum)
