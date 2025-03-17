@@ -21,8 +21,7 @@ Add `enuma` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:enuma, "~> 0.1.0"},
-    {:ecto, "~> 3.5", optional: true} # Optional: Only if you need Ecto integration
+    {:enuma, "~> 0.1.0"}
   ]
 end
 ```
